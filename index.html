@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>GlucoNote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js for trends graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- jsPDF for professional PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- jsPDF AutoTable for structured PDF tables -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+<div id="shell">
+
+<!-- ══════════════════════════════════
+     SPLASH
+══════════════════════════════════ -->
+<div class="scr on" id="s-splash">
+  <div class="sring"></div>
+  <div class="sring d1"></div>
+  <div class="splash-inner">
+    <div class="spl-logo">
+      <svg width="40" height="40" viewBox="0 0 44 44" fill="none">
+        <polyline points="2,22 8,22 13,9 17,35 22,13 27,29 32,22 42,22"
+          stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="22" cy="13" r="3.5" fill="white"/>
+      </svg>
+    </div>
+    <p class="spl-title">GlucoNote</p>
+    <p class="spl-sub">Reduce stress, not just track glucose.</p>
+    <div class="spl-bar"><div class="spl-fill"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     AUTH — Sign In / Sign Up
+══════════════════════════════════ -->
+<div class="scr" id="s-auth">
+  <div class="page-scroll">
+    <div class="auth-hero">
+      <div class="auth-logo">
+        <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
+          <polyline points="2,22 8,22 13,9 17,35 22,13 27,29 32,22 42,22"
+            stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="22" cy="13" r="3.5" fill="white"/>
+        </svg>
+      </div>
+      <p class="auth-h">GlucoNote</p>
+      <p class="auth-sub2">Your calm diabetes companion 🌿</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="atab on" id="tab-in" onclick="authTab('in')">Sign In</button>
+      <button class="atab"    id="tab-up" onclick="authTab('up')">Sign Up</button>
+    </div>
+
+    <!-- Sign In form -->
+    <div class="auth-form" id="form-in">
+      <h3>Welcome back 👋</h3>
+      <div class="fgrp">
+        <label class="flbl">Email</label>
+        <input class="finp" id="li-email" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Password</label>
+        <input class="finp" id="li-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-p" onclick="doLogin()">Sign In</button>
+      <p class="auth-hint">No account? <span onclick="authTab('up')">Sign Up</span></p>
+    </div>
+
+    <!-- Sign Up form — captures real name for personalisation -->
+    <div class="auth-form" id="form-up" style="display:none;">
+      <h3>Create your account ✨</h3>
+      <p class="auth-note">Your data stays private on your device only.</p>
+      <div class="fgrp">
+        <label class="flbl">Your First Name</label>
+        <input class="finp" id="su-name" type="text" placeholder="e.g. Maria" autocomplete="given-name">
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Email</label>
+        <input class="finp" id="su-email" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Password</label>
+        <input class="finp" id="su-pass" type="password" placeholder="Create a password" autocomplete="new-password">
+      </div>
+      <button class="btn btn-p" onclick="doSignup()">Create Account</button>
+      <p class="auth-hint">Already registered? <span onclick="authTab('in')">Sign In</span></p>
+    </div>
+    <div style="height:40px;"></div>
+  </div><!-- /.page-scroll -->
+</div>
+
+<!-- ══════════════════════════════════
+     DASHBOARD
+══════════════════════════════════ -->
+<div class="scr" id="s-dash">
+  <div class="page-scroll">
+    <div class="dash-hero">
+      <div class="dash-top">
+        <div>
+          <p class="d-greet" id="d-greet">Good morning,</p>
+          <h2 class="d-name"  id="d-name">Friend 👋</h2>
+        </div>
+        <button class="av-btn" id="d-av" onclick="navGo('s-set','nb-set')">?</button>
+      </div>
+    </div>
+
+    <div class="float-card">
+      <div class="fc-left">
+        <p class="fc-lbl">Today's Average</p>
+        <p class="fc-val" id="fc-val">— <span>mg/dL</span></p>
+        <p class="fc-st"  id="fc-st">Log your first reading</p>
+      </div>
+      <div class="fc-right">
+        <canvas id="mini-c" width="96" height="52"></canvas>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:22px;">
+      <p class="sec-lbl">Quick Actions</p>
+      <div class="qa-grid">
+        <button class="qa" onclick="go('s-log')">   <span class="qa-ico">📝</span>Log</button>
+        <button class="qa" onclick="go('s-buddy')"> <span class="qa-ico">💬</span>Buddy</button>
+        <button class="qa" onclick="navGo('s-rem','nb-rem')">  <span class="qa-ico">🔔</span>Remind</button>
+        <button class="qa" onclick="navGo('s-rep','nb-rep')"> <span class="qa-ico">📊</span>Reports</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <p class="sec-lbl" style="margin-bottom:10px;">Daily Insight</p>
+      <div class="ins-card" id="ins-card">
+        <div class="ins-row">
+          <span class="ins-ico" id="ins-ico">🌿</span>
+          <div>
+            <p class="ins-ttl" id="ins-ttl">Welcome to GlucoNote!</p>
+            <p class="ins-bod" id="ins-bod">Log your first reading to unlock your personalised daily insight.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-row">
+        <p class="sec-title">Recent Logs</p>
+        <button class="sec-link" onclick="navGo('s-rep','nb-rep')">See all</button>
+      </div>
+      <div id="recent-list">
+        <p class="empty">No logs yet — tap <strong>Log</strong> to add your first reading!</p>
+      </div>
+    </div>
+
+    <div class="scroll-spacer"></div>
+  </div><!-- /.page-scroll -->
+
+  <nav class="bnav">
+    <button class="nb on" id="nb-dash"   onclick="navGo('s-dash','nb-dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home
+    </button>
+    <button class="nb" id="nb-charts" onclick="navGo('s-charts','nb-charts')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Trends
+    </button>
+    <button class="nb nb-plus" onclick="go('s-log')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nb" id="nb-rem" onclick="navGo('s-rem','nb-rem')">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Remind
+    </button>
+    <button class="nb" id="nb-set" onclick="navGo('s-set','nb-set')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════
+     LOG ENTRY
+══════════════════════════════════ -->
+<div class="scr" id="s-log">
+  <div class="hdr">
+    <button class="bbtn" id="log-back">←</button>
+    <span class="hdr-title">Log Reading</span>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="page-scroll pad-h">
+    <p class="flbl" style="margin-bottom:9px;">When did you test?</p>
+    <div class="time-grid" id="tgrid">
+      <button class="tbtn on" data-v="Fasting">🌅 Fasting</button>
+      <button class="tbtn" data-v="Before Meal">🍽️ Before Meal</button>
+      <button class="tbtn" data-v="After Meal">✅ After Meal</button>
+      <button class="tbtn" data-v="Bedtime">🌙 Bedtime</button>
+    </div>
+    <div class="rdisplay">
+      <span class="rnum" id="rnum">—</span>
+      <span class="runit">mg/dL</span>
+    </div>
+    <p class="rfeed" id="rfeed">Use the keypad below</p>
+    <div class="kpad" id="kpad">
+      <button class="k" data-k="1">1</button>
+      <button class="k" data-k="2">2</button>
+      <button class="k" data-k="3">3</button>
+      <button class="k" data-k="4">4</button>
+      <button class="k" data-k="5">5</button>
+      <button class="k" data-k="6">6</button>
+      <button class="k" data-k="7">7</button>
+      <button class="k" data-k="8">8</button>
+      <button class="k" data-k="9">9</button>
+      <button class="k k-del" data-k="del">⌫</button>
+      <button class="k" data-k="0">0</button>
+      <button class="k k-ok" data-k="ok">✓</button>
+    </div>
+    <p class="flbl" style="margin-bottom:8px;">How are you feeling? (optional)</p>
+    <textarea class="finp" id="log-notes" rows="2"
+      placeholder="e.g. Felt a bit tired after lunch…"
+      style="resize:none;width:100%;font-family:var(--font);"></textarea>
+    <div class="scroll-spacer"></div>
+  </div><!-- /.page-scroll -->
+</div>
+
+<!-- ══════════════════════════════════
+     GLUCOBUDDY
+══════════════════════════════════ -->
+<div class="scr" id="s-buddy">
+  <div class="chat-hdr">
+    <button class="bbtn chat-back-btn" id="buddy-back">←</button>
+    <div class="chat-av">🤖</div>
+    <div>
+      <p class="chat-bname">GlucoBuddy</p>
+      <p class="chat-bsub">● Always here for you</p>
+    </div>
+    <button class="chat-help-btn" onclick="openModal('m-help')">❓ Help</button>
+  </div>
+  <div class="chat-messages" id="chat-body"></div>
+  <div class="qr-row">
+    <button class="qrc" data-m="I feel dizzy 😟">I feel dizzy</button>
+    <button class="qrc" data-m="What should I eat? 🥗">What to eat?</button>
+    <button class="qrc" data-m="I need motivation 💪">Motivate me</button>
+    <button class="qrc" data-m="My sugar is high 📈">Sugar is high</button>
+    <button class="qrc" data-m="My sugar is low 📉">Sugar is low</button>
+    <button class="qrc" data-m="Give me a tip 💡">Daily tip</button>
+  </div>
+  <div class="chat-inp-row">
+    <input class="chat-inp" id="chat-in" type="text" placeholder="Type a message…">
+    <button class="chat-send" id="chat-send">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white"
+        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     TRENDS / CHARTS
+══════════════════════════════════ -->
+<div class="scr" id="s-charts">
+  <div class="hdr">
+    <button class="bbtn" id="charts-back">←</button>
+    <span class="hdr-title">Trends</span>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="page-scroll pad-h">
+    <div class="tabs" id="range-tabs">
+      <button class="tabbtn on" data-d="7">7 Days</button>
+      <button class="tabbtn" data-d="14">14 Days</button>
+      <button class="tabbtn" data-d="30">30 Days</button>
+    </div>
+    <div class="chart-card">
+      <div class="chart-legend">
+        <div class="cl-item"><div class="cl-dot" style="background:#E06C6C;"></div>Higher</div>
+        <div class="cl-item"><div class="cl-dot" style="background:#5BAB8B;"></div>Comfortable</div>
+        <div class="cl-item"><div class="cl-dot" style="background:#D4974A;"></div>A little low</div>
+      </div>
+      <div class="chart-wrap"><canvas id="gc"></canvas></div>
+      <div class="chart-tip" id="chart-tip">Log some readings to see your personalised insights here 🌿</div>
+    </div>
+    <div class="stats-grid">
+      <div class="scard"><p class="scard-lbl">Average</p><p class="scard-val" id="s-avg" style="color:var(--ok);">—</p><p class="scard-unit">mg/dL</p></div>
+      <div class="scard"><p class="scard-lbl">Highest</p><p class="scard-val" id="s-hi"  style="color:var(--hi);">—</p><p class="scard-unit">mg/dL</p></div>
+      <div class="scard"><p class="scard-lbl">Lowest</p> <p class="scard-val" id="s-lo"  style="color:var(--lo);">—</p><p class="scard-unit">mg/dL</p></div>
+      <div class="scard"><p class="scard-lbl">Readings</p><p class="scard-val" id="s-cnt" style="color:var(--brand);">—</p><p class="scard-unit">total</p></div>
+    </div>
+    <div class="scroll-spacer"></div>
+  </div><!-- /.page-scroll -->
+
+  <nav class="bnav">
+    <button class="nb" onclick="navGo('s-dash','nb-dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home
+    </button>
+    <button class="nb on">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Trends
+    </button>
+    <button class="nb nb-plus" onclick="go('s-log')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nb" onclick="navGo('s-rem','nb-rem')">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Remind
+    </button>
+    <button class="nb" onclick="navGo('s-set','nb-set')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════
+     REMINDERS
+══════════════════════════════════ -->
+<div class="scr" id="s-rem">
+  <div class="hdr">
+    <button class="bbtn" id="rem-back">←</button>
+    <span class="hdr-title">Reminders</span>
+    <button class="bbtn" id="rem-add" title="Add reminder">＋</button>
+  </div>
+  <div class="page-scroll pad-h" id="rem-body">
+    <p class="empty" id="rem-empty">No reminders yet — tap ＋ to add one!</p>
+  </div>
+
+  <nav class="bnav">
+    <button class="nb" onclick="navGo('s-dash','nb-dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home
+    </button>
+    <button class="nb" onclick="navGo('s-charts','nb-charts')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Trends
+    </button>
+    <button class="nb nb-plus" onclick="go('s-log')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nb on" id="nb-rem">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Remind
+    </button>
+    <button class="nb" onclick="navGo('s-set','nb-set')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════
+     REPORTS  (with date-range selector)
+══════════════════════════════════ -->
+<div class="scr" id="s-rep">
+  <div class="hdr">
+    <button class="bbtn" id="rep-back">←</button>
+    <span class="hdr-title">Reports</span>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="page-scroll pad-h">
+
+    <!-- ── Date-range selector ── -->
+    <p class="sec-lbl" style="margin-bottom:10px;">Report Period</p>
+    <div class="range-selector">
+      <button class="range-pill on" data-days="7"   onclick="setRepRange(this)">Last 7 Days</button>
+      <button class="range-pill"    data-days="14"  onclick="setRepRange(this)">Last 14 Days</button>
+      <button class="range-pill"    data-days="30"  onclick="setRepRange(this)">Last 30 Days</button>
+      <button class="range-pill"    data-days="0"   onclick="setRepRange(this)">All Time</button>
+    </div>
+
+    <!-- Custom date range row -->
+    <div class="custom-range" id="custom-range" style="display:none;">
+      <div class="date-pair">
+        <div class="fgrp" style="flex:1;margin-bottom:0;">
+          <label class="flbl">From</label>
+          <input class="finp" type="date" id="range-from">
+        </div>
+        <div class="fgrp" style="flex:1;margin-bottom:0;">
+          <label class="flbl">To</label>
+          <input class="finp" type="date" id="range-to">
+        </div>
+        <button class="btn btn-p" id="apply-range-btn" style="flex:0 0 auto;padding:13px 16px;font-size:14px;">Apply</button>
+      </div>
+    </div>
+
+    <!-- ── Summary stats ── -->
+    <p class="sec-lbl" style="margin:16px 0 10px;">Summary</p>
+    <div class="sum-row">
+      <div class="sum-card"><p class="sum-lbl">Average</p><p class="sum-val" id="r-avg">—</p><p class="sum-unit">mg/dL</p></div>
+      <div class="sum-card"><p class="sum-lbl">Total</p>  <p class="sum-val" id="r-cnt">—</p><p class="sum-unit">readings</p></div>
+      <div class="sum-card"><p class="sum-lbl">In Range</p><p class="sum-val" id="r-rng">—</p><p class="sum-unit">% of logs</p></div>
+    </div>
+
+    <!-- ── Export actions ── -->
+    <p class="sec-lbl" style="margin:16px 0 10px;">Export &amp; Share</p>
+    <button class="exp-card pdf" id="btn-pdf">
+      <span class="exp-ico">📄</span>
+      <div><p class="exp-name">Export as PDF</p><p class="exp-sub">Professional formatted report</p></div>
+      <span class="exp-arr">›</span>
+    </button>
+    <button class="exp-card csv" id="btn-csv">
+      <span class="exp-ico">📊</span>
+      <div><p class="exp-name">Export as CSV</p><p class="exp-sub">Open in Excel or Sheets</p></div>
+      <span class="exp-arr">›</span>
+    </button>
+    <button class="exp-card eml" id="btn-eml">
+      <span class="exp-ico">📧</span>
+      <div><p class="exp-name">Email to Doctor</p><p class="exp-sub">Generate PDF and prepare email</p></div>
+      <span class="exp-arr">›</span>
+    </button>
+
+    <!-- ── Log list for current range ── -->
+    <p class="sec-lbl" style="margin:16px 0 10px;">
+      Logs for selected period
+    </p>
+    <div id="all-logs"></div>
+    <div class="scroll-spacer"></div>
+  </div><!-- /.page-scroll -->
+
+  <nav class="bnav">
+    <button class="nb" onclick="navGo('s-dash','nb-dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home
+    </button>
+    <button class="nb" onclick="navGo('s-charts','nb-charts')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Trends
+    </button>
+    <button class="nb nb-plus" onclick="go('s-log')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nb" onclick="navGo('s-rem','nb-rem')">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Remind
+    </button>
+    <button class="nb on" id="nb-rep">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════
+     SETTINGS
+══════════════════════════════════ -->
+<div class="scr" id="s-set">
+  <div class="hdr">
+    <button class="bbtn" id="set-back">←</button>
+    <span class="hdr-title">Settings</span>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="page-scroll pad-h">
+
+    <!-- Profile card -->
+    <div class="prof-card">
+      <div class="prof-av" id="p-av">?</div>
+      <div class="prof-info">
+        <p class="prof-name"  id="p-name">Loading…</p>
+        <p class="prof-email" id="p-email">loading…</p>
+        <span class="prof-tag">GlucoNote Member</span>
+      </div>
+      <button class="prof-edit-btn" onclick="openModal('m-prof')" title="Edit profile">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit
+      </button>
+    </div>
+
+    <div class="set-group">
+      <p class="set-glbl">Account</p>
+      <div class="set-row" onclick="openModal('m-prof')">
+        <span class="set-ico">👤</span><span class="set-lbl">Edit Profile</span><span class="set-arr">›</span>
+      </div>
+      <div class="set-row">
+        <span class="set-ico">🔔</span><span class="set-lbl">Notifications</span><span class="set-arr">›</span>
+      </div>
+      <div class="set-row">
+        <span class="set-ico">🔒</span><span class="set-lbl">Privacy &amp; Security</span><span class="set-arr">›</span>
+      </div>
+    </div>
+
+    <div class="set-group">
+      <p class="set-glbl">Medical</p>
+      <div class="set-row">
+        <span class="set-ico">🎯</span><span class="set-lbl">Target Range</span><span class="set-arr">›</span>
+      </div>
+      <div class="set-row">
+        <span class="set-ico">💊</span><span class="set-lbl">Medications</span><span class="set-arr">›</span>
+      </div>
+    </div>
+
+    <div class="set-group">
+      <p class="set-glbl">Support</p>
+      <div class="set-row" onclick="openModal('m-help')">
+        <span class="set-ico">❓</span><span class="set-lbl">Help Center</span><span class="set-arr">›</span>
+      </div>
+      <div class="set-row">
+        <span class="set-ico">📩</span><span class="set-lbl">Contact Support</span><span class="set-arr">›</span>
+      </div>
+    </div>
+
+    <div class="set-group">
+      <p class="set-glbl">Data</p>
+      <div class="set-row" id="demo-btn">
+        <span class="set-ico">🧪</span><span class="set-lbl">Load Demo Data (7 days)</span><span class="set-arr">›</span>
+      </div>
+      <div class="set-row" id="clear-btn">
+        <span class="set-ico">🗑️</span><span class="set-lbl">Clear All Data</span><span class="set-arr">›</span>
+      </div>
+    </div>
+
+    <button class="btn-out" id="logout-btn">Sign Out</button>
+    <p class="app-footer">GlucoNote v1</p>
+    <div class="scroll-spacer"></div>
+  </div><!-- /.page-scroll -->
+
+  <nav class="bnav">
+    <button class="nb" onclick="navGo('s-dash','nb-dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home
+    </button>
+    <button class="nb" onclick="navGo('s-charts','nb-charts')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Trends
+    </button>
+    <button class="nb nb-plus" onclick="go('s-log')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nb" onclick="navGo('s-rem','nb-rem')">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Remind
+    </button>
+    <button class="nb on" id="nb-set">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════
+     MODALS
+══════════════════════════════════ -->
+
+<!-- Edit Profile -->
+<div class="moverlay" id="m-prof">
+  <div class="msheet">
+    <div class="msheet-drag"></div>
+    <h3>Edit Profile</h3>
+    <div class="fgrp"><label class="flbl">Name</label><input class="finp" id="e-name" type="text" placeholder="Your name"></div>
+    <div class="fgrp"><label class="flbl">Email</label><input class="finp" id="e-email" type="email" placeholder="your@email.com"></div>
+    <div class="mrow">
+      <button class="btn btn-s" onclick="closeModal('m-prof')">Cancel</button>
+      <button class="btn btn-p" id="save-prof-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Reminder -->
+<div class="moverlay" id="m-rem">
+  <div class="msheet">
+    <div class="msheet-drag"></div>
+    <h3>Add Reminder</h3>
+    <div class="fgrp"><label class="flbl">Name</label><input class="finp" id="r-name" type="text" placeholder="e.g. Morning Metformin"></div>
+    <div class="fgrp"><label class="flbl">Time</label><input class="finp" id="r-time" type="time" value="08:00"></div>
+    <div class="fgrp"><label class="flbl">Dose (optional)</label><input class="finp" id="r-dose" type="text" placeholder="e.g. 500mg"></div>
+    <div class="mrow">
+      <button class="btn btn-s" onclick="closeModal('m-rem')">Cancel</button>
+      <button class="btn btn-p" id="save-rem-btn">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Email to Doctor — generates PDF then mailto -->
+<div class="moverlay" id="m-email">
+  <div class="msheet">
+    <div class="msheet-drag"></div>
+    <h3>📧 Email to Doctor</h3>
+    <p class="modal-desc">
+      A professional PDF report for the selected period will be generated and downloaded.
+      Your email app will then open with a pre-filled message ready to attach and send.
+    </p>
+    <div class="fgrp">
+      <label class="flbl">Doctor's Email</label>
+      <input class="finp" id="doc-email" type="email" placeholder="doctor@clinic.com">
+    </div>
+    <div class="fgrp">
+      <label class="flbl">Patient Name (for report header)</label>
+      <input class="finp" id="doc-patient" type="text" placeholder="Your full name">
+    </div>
+    <!-- Report preview inside modal -->
+    <div class="report-preview" id="report-preview">
+      <p class="preview-lbl">📋 What will be included</p>
+      <p class="preview-body" id="preview-body">Loading summary…</p>
+    </div>
+    <div class="mrow">
+      <button class="btn btn-s" onclick="closeModal('m-email')">Cancel</button>
+      <button class="btn btn-p" id="send-email-btn">
+        Generate PDF &amp; Open Email →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Help Center -->
+<div class="moverlay" id="m-help">
+  <div class="msheet">
+    <div class="msheet-drag"></div>
+    <h3>❓ Help Center</h3>
+    <div class="help-item">
+      <p class="help-q">How do I log a glucose reading?</p>
+      <p class="help-a">Tap the ＋ button at the bottom. Use the keypad, pick your mealtime, then tap ✓ to save.</p>
+    </div>
+    <div class="help-item">
+      <p class="help-q">What is the comfortable glucose range?</p>
+      <p class="help-a">For most adults, <strong>70–180 mg/dL</strong> is considered comfortable. Always follow your doctor's personal target for you.</p>
+    </div>
+    <div class="help-item">
+      <p class="help-q">How do I select a date range for reports?</p>
+      <p class="help-a">On the Reports screen, tap one of the range buttons (7 Days, 14 Days, 30 Days, or All Time). A custom date range option is also available.</p>
+    </div>
+    <div class="help-item">
+      <p class="help-q">How do I export my data?</p>
+      <p class="help-a">Go to Reports → tap Export as PDF, Export as CSV, or Email to Doctor. The PDF is professionally formatted with a cover section and full data table.</p>
+    </div>
+    <div class="help-item">
+      <p class="help-q">Is my data private?</p>
+      <p class="help-a">Yes — all data stays only on your device in your browser's local storage. Nothing is sent to any server.</p>
+    </div>
+    <div class="help-item">
+      <p class="help-q">What is GlucoBuddy?</p>
+      <p class="help-a">GlucoBuddy is your built-in chat companion offering gentle advice about food, motivation, and managing readings.</p>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('m-help')" style="margin-top:8px;">Got it 👍</button>
+    <div style="height:8px;"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+</div><!-- /#shell -->
+<script src="script.js"></script>
+</body>
+</html>
